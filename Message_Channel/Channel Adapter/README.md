@@ -163,3 +163,13 @@ const consumer = kafka.consumer({ groupId: "cocina-orders" });
 
 📌 **Este sistema desacopla los módulos del restaurante y permite que los pedidos se procesen en tiempo real sin bloquear otras operaciones. 🚀**
 
+
+---
+📌 **¿Qué es un Message Channel y un Channel Adapter?**
+
+**Message Channel**  
+Es un medio a través del cual las aplicaciones pueden enviar y recibir mensajes de forma desacoplada. En este caso, usamos Redis y Kafka como canales de mensajería.
+
+**Channel Adapter**  
+Es un adaptador que permite que una aplicación se conecte a un Message Channel sin que esta tenga que saber nada sobre el canal en sí. Actúa como un "puente" entre la aplicación y el sistema de mensajería.  
+
