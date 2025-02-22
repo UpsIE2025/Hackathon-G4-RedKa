@@ -33,3 +33,52 @@ PARA evitar interrupciones en el procesamiento y facilitar su posterior análisi
    - DADO que un mensaje defectuoso es recibido
    - CUANDO no puede ser procesado correctamente
    - ENTONCES el sistema debe continuar operando sin interrupciones, enviando el mensaje erróneo al canal correspondiente.
+  
+## Ejecución de Programa
+Para ejecutar el programa se deben seguir los diguientes pasos:
+
+### 1. Levantar Redis en Docker con Docker Compose
+Ejecutar el siguiente comando para levantar Redis usando Docker Compose:
+
+```bash
+docker compose up --build -d
+```
+
+### 2. Ejecutar el Script de Python del Producer
+
+Una vez que Redis esté levantado, ejecutar el script del productor:
+
+```bash
+python producer.py
+```
+
+### 3. Ejecutar el Script de Python del Consumer
+
+Luego, ejecutar el script del consumidor:
+
+```bash
+python consumer.py
+```
+
+### 4. Ejecutar el Script de Python del Monitoreo
+
+Finalmente, ejecutar el script del monitoreo:
+
+```bash
+python consumer.py
+```
+
+## 5. Probar la Funcionalidad con Postman
+
+Para probar la funcionalidad, usa Postman con los siguientes parámetros:
+
+- **URL**: `http://localhost:5000/produce`
+- **Método**: `POST`
+- **Body (JSON)**:
+
+```json
+{
+   "id": 1,
+  "content": "Envío de Mensaje 1"
+}
+```
