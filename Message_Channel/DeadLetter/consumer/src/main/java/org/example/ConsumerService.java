@@ -29,11 +29,16 @@ public class ConsumerService {
     private void consumeMessages() {
         while (running) {
             try {
-                var result = redisClient.blpop(Arrays.asList("messages", "1"));
+                // Leer un mensaje de la lista de fallos
+                var result = redisClient.blpop(Arrays.asList("failedMessages", "1"));
                 if (result != null && result.size() > 1) {
-                    String message = result.get(1).toString();
-                    System.out.println("Mensaje recibido: " + message);
-                }else {
+                    String failureDetails = result.get(1).toString();
+                    System.out.println("Mensaje fallido recibido: " + failureDetails);
+
+                    // Procesar el fallo
+                    // Aquí es donde puedes realizar un procesamiento adicional si es necesario
+                    processFailureDetails(failureDetails);
+                } else {
                     TimeUnit.MILLISECONDS.sleep(100);
                 }
             } catch (Exception e) {
@@ -47,4 +52,12 @@ public class ConsumerService {
             }
         }
     }
+
+    private void processFailureDetails(String failureDetails) {
+        // Almacenar detalles adicionales si es necesario, por ejemplo en otra lista o base de datos
+        // Aquí se podrían almacenar las estadísticas en tiempo real o cualquier otro dato relevante.
+        System.out.println("Procesando detalles de fallo: " + failureDetails);
+        redisClient.rpush(java.util.Arrays.asList("processedFailedMessages", failureDetails));
+    }
 }
+
