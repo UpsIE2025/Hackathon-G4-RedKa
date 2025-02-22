@@ -4,12 +4,27 @@ Este proyecto implementa un **Message Channel** utilizando **Redis** y **Kafka**
 
 ---
 
+## 📌 Caso de Uso Real: Sistema de Pedidos para un Restaurante 🍔
+
+Supongamos que tenemos un sistema de pedidos en línea donde los clientes hacen pedidos a través de una aplicación web o móvil. Cada pedido debe ser procesado y enviado a la cocina para su preparación.
+
+➡️ **¿Problema?**
+Queremos desacoplar los diferentes módulos del sistema:
+- **Frontend** (Cliente hace el pedido) 🛒
+- **Backend** (Registra el pedido) 📦
+- **Cocina** (Prepara el pedido) 👨‍🍳
+
+➡️ **¿Solución?**
+Utilizamos **Message Channel y Channel Adapter** con **Redis y Kafka** para garantizar una comunicación fluida entre estos módulos sin que dependan directamente unos de otros.
+
+---
+
 ## 🚀 **Arquitectura**
 
 1. **`docker-compose.yml`** → Define la infraestructura con Kafka, Redis y herramientas de monitoreo.
-2. **`redis-publisher.js`** → Publica mensajes en un canal de Redis.
-3. **`redis-to-kafka-producer.js`** → Suscribe a Redis y reenvía los mensajes a Kafka.
-4. **`kafka-consumer.js`** → Consume los mensajes desde Kafka.
+2. **`redis-publisher.js`** → Publica pedidos en un canal de Redis.
+3. **`redis-to-kafka-producer.js`** → Suscribe a Redis y reenvía los pedidos a Kafka.
+4. **`kafka-consumer.js`** → La cocina consume los pedidos desde Kafka y los procesa.
 
 ---
 
@@ -67,154 +82,84 @@ networks:
     driver: bridge
 ```
 
-### 🔹 **Explicación de los servicios:**
-- **Kafka (`broker`)**: Maneja la comunicación asincrónica basada en eventos.
-- **Redis (`redis-broker`)**: Almacena y publica mensajes en un canal de Redis.
-- **Redis Commander (`redis-commander`)**: Provee una interfaz web para monitorear Redis en `http://localhost:8081`.
-
 ---
 
 ## 📝 **Archivos y su funcionalidad**
 
-### 📌 `redis-publisher.js` → **Publicador en Redis**
-Publica mensajes en el canal de Redis `message-channel`.
+### 📌 `redis-publisher.js` → **Simulación de Pedidos**
+Publica pedidos en el canal de Redis `order-channel`.
 
 ```js
 const { createClient } = require("redis");
-const axios = require("axios");
+const generarPedido = () => ({
+    idPedido: Math.floor(Math.random() * 1000),
+    cliente: ["Juan Pérez", "María García", "Carlos Sánchez"][Math.floor(Math.random() * 3)],
+    producto: ["Pizza", "Hamburguesa", "Papas Fritas"][Math.floor(Math.random() * 3)],
+    cantidad: Math.floor(Math.random() * 5) + 1
+});
 
 const redisClient = createClient();
 (async () => {
     await redisClient.connect();
-    console.log("📡 Conectado a Redis");
-
-    const response = await axios.get("https://jsonplaceholder.typicode.com/posts/1");
-    const message = JSON.stringify(response.data);
-
-    await redisClient.publish("message-channel", message);
-    console.log("📨 Mensaje publicado en Redis:", message);
-
+    console.log("📦 Publicando pedidos en Redis...");
+    for (let i = 0; i < 5; i++) {
+        const pedido = generarPedido();
+        await redisClient.publish("order-channel", JSON.stringify(pedido));
+        console.log("✅ Pedido publicado:", pedido);
+        await new Promise(resolve => setTimeout(resolve, 1000));
+    }
     await redisClient.disconnect();
 })();
 ```
 
----
-
-### 📌 `redis-to-kafka-producer.js` → **Redis → Kafka**
-Escucha mensajes en Redis y los reenvía a Kafka.
+### 📌 `redis-to-kafka-producer.js` → **Redis → Kafka (Adaptador de Canal)**
+Escucha pedidos en Redis y los reenvía a Kafka.
 
 ```js
 const { Kafka } = require("kafkajs");
 const { createClient } = require("redis");
-
-const kafka = new Kafka({
-    clientId: "redis-to-kafka-producer",
-    brokers: ["localhost:9092"],
-});
-
+const kafka = new Kafka({ clientId: "redis-to-kafka-producer", brokers: ["localhost:9092"] });
 const producer = kafka.producer();
 const redisClient = createClient();
-
 (async () => {
     await producer.connect();
     await redisClient.connect();
-    console.log("🔄 Conectado a Kafka y Redis");
-
-    await redisClient.subscribe("message-channel", async (message) => {
-        console.log("📥 Mensaje recibido de Redis:", message);
+    console.log("🔄 Conectado a Redis y Kafka");
+    await redisClient.subscribe("order-channel", async (pedido) => {
+        console.log("📦 Pedido recibido de Redis:", pedido);
         try {
-            await producer.send({
-                topic: "message-channel",
-                messages: [{ value: message }],
-            });
-            console.log("✅ Mensaje enviado a Kafka:", message);
+            await producer.send({ topic: "order-channel", messages: [{ value: pedido }] });
+            console.log("✅ Pedido enviado a Kafka:", pedido);
         } catch (error) {
-            console.error("❌ Error enviando mensaje a Kafka:", error);
+            console.error("❌ Error enviando pedido a Kafka:", error);
         }
     });
 })();
 ```
 
----
-
-### 📌 `kafka-consumer.js` → **Consumidor de Kafka**
-Escucha mensajes en Kafka y los procesa.
+### 📌 `kafka-consumer.js` → **Consumidor de Kafka (Cocina)**
+Recibe pedidos y los procesa.
 
 ```js
 const { Kafka } = require("kafkajs");
-
-const kafka = new Kafka({
-    clientId: "kafka-consumer",
-    brokers: ["localhost:9092"],
-});
-
-const consumer = kafka.consumer({ groupId: "message-consumers" });
-
-const run = async () => {
+const kafka = new Kafka({ clientId: "kafka-consumer", brokers: ["localhost:9092"] });
+const consumer = kafka.consumer({ groupId: "cocina-orders" });
+(async () => {
     await consumer.connect();
-    console.log("📥 Conectado a Kafka como consumer");
-
-    await consumer.subscribe({ topic: "message-channel", fromBeginning: true });
-
+    await consumer.subscribe({ topic: "order-channel", fromBeginning: true });
+    console.log("👨‍🍳 Cocina lista para recibir pedidos...");
     await consumer.run({
-        eachMessage: async ({ topic, partition, message }) => {
-            console.log(`📩 Mensaje recibido desde Kafka: ${message.value.toString()}`);
+        eachMessage: async ({ message }) => {
+            const pedido = JSON.parse(message.value.toString());
+            console.log(`🍔 Preparando pedido #${pedido.idPedido} (${pedido.cantidad}x ${pedido.producto} para ${pedido.cliente})...`);
+            await new Promise(resolve => setTimeout(resolve, Math.random() * 5000 + 2000));
+            console.log(`✅ Pedido #${pedido.idPedido} de ${pedido.cliente} listo para entrega.`);
         },
     });
-};
-
-run().catch(async (error) => {
-    console.error("❌ Error en el consumidor:", error);
-    console.log("🔄 Reintentando en 5 segundos...");
-    setTimeout(run, 5000);
-});
+})();
 ```
 
 ---
 
-## 🔧 **Cómo ejecutar**
-
-### 1️⃣ **Levantar los contenedores**
-```bash
-docker-compose up -d
-```
-
-### 2️⃣ **Verificar que Redis y Kafka están corriendo**
-```bash
-redis-cli ping
-```
-Debe responder `PONG`.
-```bash
-nc -zv localhost 9092
-```
-Debe decir `Connection succeeded!`.
-
-### 3️⃣ **Publicar un mensaje en Redis**
-```bash
-node redis-publisher.js
-```
-
-### 4️⃣ **Escuchar mensajes de Redis y reenviarlos a Kafka**
-```bash
-node redis-to-kafka-producer.js
-```
-
-### 5️⃣ **Consumir los mensajes de Kafka**
-```bash
-node kafka-consumer.js
-```
-
----
-
-## 🎯 **Resumen del flujo de datos**
-1. `redis-publisher.js` **publica** un mensaje en **Redis**.
-2. `redis-to-kafka-producer.js` **escucha** ese mensaje y lo reenvía a **Kafka**.
-3. `kafka-consumer.js` **consume** el mensaje desde **Kafka**.
-
----
-
-## 🎉 **Conclusión**
-Este proyecto demuestra cómo Redis y Kafka pueden integrarse para permitir un **Message Channel**, facilitando la comunicación entre servicios de manera escalable y desacoplada.
-
-🚀 ¡Ahora puedes modificarlo para adaptarlo a tus necesidades! 🔥
+📌 **Este sistema desacopla los módulos del restaurante y permite que los pedidos se procesen en tiempo real sin bloquear otras operaciones. 🚀**
 

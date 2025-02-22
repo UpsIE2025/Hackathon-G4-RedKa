@@ -1,38 +1,29 @@
 const { createClient } = require("redis");
-const axios = require("axios");
 
-/**
- * Redis client instance
- * @type {import('redis').RedisClientType}
- */
-const client = createClient({
-    url: "redis://localhost:6379"
+// Generador de pedidos aleatorios
+const generarPedido = () => ({
+    idPedido: Math.floor(Math.random() * 1000),
+    cliente: ["Juan Pérez", "María García", "Carlos Sánchez", "Ana Fernández"][Math.floor(Math.random() * 4)],
+    producto: ["Hamburguesa Doble", "Pizza", "Papas Fritas", "Hot Dog"][Math.floor(Math.random() * 4)],
+    cantidad: Math.floor(Math.random() * 5) + 1,
+    estado: "Pendiente"
 });
 
-client.on("error", (err) => console.error("Redis Client Error", err));
+// Conectar a Redis
+const redisClient = createClient();
 
-/**
- * Publishes a message to a Redis channel after fetching data from an external API.
- * @async
- * @function publishToRedis
- * @returns {Promise<void>}
- */
-const publishToRedis = async () => {
-    await client.connect();  // Connect to Redis before using it
+(async () => {
+    await redisClient.connect();
+    console.log("📦 Publicando pedidos en Redis...");
 
-    try {
-        const response = await axios.get("https://jsonplaceholder.typicode.com/posts/1");
-        const message = JSON.stringify(response.data);
+    for (let i = 0; i < 5; i++) {
+        const pedido = generarPedido();
+        await redisClient.publish("order-channel", JSON.stringify(pedido));
+        console.log("✅ Pedido publicado:", pedido);
 
-        await client.publish("message-channel", message);
-        console.log("Message published to Redis:", message);
-
-    } catch (error) {
-        console.error("Error publishing to Redis:", error);
-    } finally {
-        await client.quit();  // Close the connection after sending the message
+        // Simulación de envío escalonado
+        await new Promise(resolve => setTimeout(resolve, 1000));
     }
-};
 
-// Start the process of publishing to Redis
-publishToRedis();
+    await redisClient.disconnect();
+})();
