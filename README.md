@@ -37,3 +37,32 @@ A Point-to-Point Channel ensures that a message is delivered to exactly one rece
 ### Publish-Subscribe Channel
 A Publish-Subscribe Channel allows multiple consumers to receive messages from a single channel. This pattern is useful for broadcasting messages to multiple subscribers.
 
+
+## 🚀 Implementation Details
+
+### Channel Adapter
+Implemented by AdrianC47, the Channel Adapter connects the application to Redis and Kafka for seamless message communication.
+
+- **`redis-publisher.js`**: Publishes orders to a Redis channel.
+- **`redis-to-kafka-producer.js`**: Subscribes to Redis and forwards orders to Kafka.
+- **`kafka-consumer.js`**: Consumes orders from Kafka and processes them.
+
+## 📦 Infrastructure with Docker Compose
+
+The `docker-compose.yml` file defines the infrastructure with Kafka, Redis, and monitoring tools.
+
+## 🛠️ Getting Started
+
+### Prerequisites
+
+- Docker
+- Java 11+
+- Node.js
+- Python 3.8+
+
+### Running the Project
+
+1. **Clone the repository:**
+   ```sh
+   git clone https://github.com/AdrianC47/Hackathon-G4-RedKa.git
+   cd Hackathon-G4-RedKa
