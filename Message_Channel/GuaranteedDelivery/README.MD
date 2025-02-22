@@ -20,3 +20,6 @@
 - **DADO** que un broker de Kafka falla,  
   **CUANDO** hay réplicas del log en otros brokers,  
   **ENTONCES** los mensajes deben poder recuperarse desde las réplicas sin pérdida de datos.  
+
+
+  pip install confluent-kafka
