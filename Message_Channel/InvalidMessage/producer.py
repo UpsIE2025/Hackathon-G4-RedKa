@@ -17,10 +17,10 @@ def produce_message():
     data = request.json
 
     # Validación: asegurarse de que el mensaje tiene el formato correcto
-    if 'id' not in data or 'content' not in data:
+    #if 'id' not in data or 'content' not in data:
         # Si el mensaje es inválido, enviarlo al canal de mensajes no válidos
-        producer.send('invalid-messages', {'error': 'Formato incorrecto', 'message': data})
-        return jsonify({'status': 'error', 'message': 'Mensaje inválido enviado a invalid-messages'}), 400
+        #producer.send('invalid-messages', {'error': 'Formato incorrecto', 'message': data})
+        #return jsonify({'status': 'error', 'message': 'Mensaje inválido enviado a invalid-messages'}), 400
 
     # Si el mensaje es válido, enviarlo al topic correcto
     producer.send(TOPIC, data)
