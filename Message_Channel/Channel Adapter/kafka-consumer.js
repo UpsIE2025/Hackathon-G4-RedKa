@@ -1,49 +1,28 @@
 const { Kafka } = require("kafkajs");
 
-/**
- * Kafka configuration
- * @type {Kafka}
- */
+// Configurar Kafka
 const kafka = new Kafka({
     clientId: "kafka-consumer",
-    brokers: ["localhost:9092"]
+    brokers: ["localhost:9092"],
 });
 
-/**
- * Kafka consumer instance
- * @type {import('kafkajs').Consumer}
- */
-const consumer = kafka.consumer({ groupId: "message-consumers" });
+const consumer = kafka.consumer({ groupId: "cocina-orders" });
 
-/**
- * Starts the Kafka consumer, subscribes to the topic, and processes incoming messages.
- * @async
- * @function startConsumer
- * @returns {Promise<void>}
- */
-const startConsumer = async () => {
-    // Connect to the Kafka broker
+(async () => {
     await consumer.connect();
+    await consumer.subscribe({ topic: "order-channel", fromBeginning: true });
 
-    // Subscribe to the topic "message-channel" from the beginning
-    await consumer.subscribe({ topic: "message-channel", fromBeginning: true });
+    console.log("👨‍🍳 Cocina lista para recibir pedidos...");
 
-    // Run the consumer to process each message
     await consumer.run({
-        /**
-         * Processes each message received from Kafka.
-         * @async
-         * @function eachMessage
-         * @param {Object} param0 - The message object
-         * @param {string} param0.topic - The topic name
-         * @param {number} param0.partition - The partition number
-         * @param {import('kafkajs').Message} param0.message - The Kafka message
-         */
-        eachMessage: async ({ topic, partition, message }) => {
-            console.log(`Mensaje recibido desde Kafka: ${message.value.toString()}`);
-        }
-    });
-};
+        eachMessage: async ({ message }) => {
+            const pedido = JSON.parse(message.value.toString());
+            console.log(`🍔 Preparando pedido #${pedido.idPedido} (${pedido.cantidad}x ${pedido.producto} para ${pedido.cliente})...`);
 
-// Start the Kafka consumer
-startConsumer();
+            // Simulación de tiempo de preparación
+            await new Promise(resolve => setTimeout(resolve, Math.random() * 5000 + 2000));
+
+            console.log(`✅ Pedido #${pedido.idPedido} de ${pedido.cliente} listo para entrega.`);
+        },
+    });
+})();
