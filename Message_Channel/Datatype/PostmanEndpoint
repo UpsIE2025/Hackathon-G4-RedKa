@@ -1,0 +1,18 @@
+
+
+curl --location 'http://localhost:8080/send/notificaciones_clientes' \
+--header 'Content-Type: application/json' \
+--data '{
+    "client_id": "17346577828",
+    "message": "Cuenta activada exitosamente"
+}'
+
+
+
+curl --location 'http://localhost:8080/send/transaccionesWWWW' \
+--header 'Content-Type: application/json' \
+--data '{
+    "id": "12345",
+    "amount": 500,
+    "date": "2025-02-22T12:00:00"
+}'

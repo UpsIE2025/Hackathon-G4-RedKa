@@ -20,7 +20,6 @@ public class KafkaConsumer {
     public void consumeTransaction(String message) {
         if (redisService.isValidChannel("transacciones")) {
             System.out.println("Received transaction: " + message);
-            // Lógica para procesar la transacción
         } else {
             System.out.println("Invalid channel for transacciones");
         }
@@ -30,7 +29,6 @@ public class KafkaConsumer {
     public void consumeAlert(String message) {
         if (redisService.isValidChannel("alertas_fraude")) {
             System.out.println("Received alert: " + message);
-            // Lógica para procesar alerta de fraude
         } else {
             System.out.println("Invalid channel for alertas_fraude");
         }
@@ -40,7 +38,6 @@ public class KafkaConsumer {
     public void consumeNotification(String message) {
         if (redisService.isValidChannel("notificaciones_clientes")) {
             System.out.println("Received notification: " + message);
-            // Lógica para procesar notificación
         } else {
             System.out.println("Invalid channel for notificaciones_clientes");
         }

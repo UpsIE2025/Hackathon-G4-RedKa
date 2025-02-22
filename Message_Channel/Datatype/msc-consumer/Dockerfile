@@ -9,7 +9,7 @@ WORKDIR /app
 COPY /build/libs/msc-consumer-0.0.1-SNAPSHOT.jar /app/msc-consumer.jar
 
 # Exponer el puerto en el que la aplicación escucha
-EXPOSE 8081
+EXPOSE 8082
 
 # Comando para ejecutar la aplicación
 ENTRYPOINT ["java", "-jar", "/app/msc-consumer.jar"]
