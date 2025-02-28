@@ -65,7 +65,7 @@ python consumer.py
 Finalmente, ejecutar el script del monitoreo:
 
 ```bash
-python consumer.py
+python monitor.py
 ```
 
 ### 5. Probar la Funcionalidad con Postman
@@ -82,10 +82,10 @@ Para probar la funcionalidad, usa Postman con los siguientes parámetros:
   "content": "Envío de Mensaje 1"
 }
 ```
-## Para que el COnsumidor sea quien coloque los mensajes en el canal inv{alido
+## Para que el COnsumidor sea quien coloque los mensajes en el canal inválido
 ### 1. Eliminar o comentar las líneas del archivo productor.py desde la 20 hasta la 23
-Adicional, detener el script consumer.py, ya que este siempre estar{a colocando los mensajes inválidos en el canal de los mensajes válidos
-### 2. Ejecutar el Script de Python de COnsumidor que coloca los mensajes en el canal inválido
+Adicional, detener el script consumer.py, ya que este siempre estará colocando los mensajes inválidos en el canal de los mensajes válidos
+### 2. Ejecutar el Script de Python de Consumidor que coloca los mensajes en el canal inválido
 
 Finalmente, ejecutar el script del monitoreo:
 
