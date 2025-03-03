@@ -29,10 +29,20 @@ Esto ejecutará RabbitMQ con la interfaz web disponible en **http://localhost:15
 
 Para enviar mensajes JSON a la cola `document_messages`, usa **cURL**:
 ```bash
-curl --location 'http://localhost:15672/api/exchanges/%2F/amq.default/publish' \
+curl --location 'http://localhost:3000/send-document' \
 --header 'Content-Type: application/json' \
---header 'Authorization: Basic YWRtaW46YWRtaW4=' \
---data '{"properties":{},"routing_key":"document_messages","payload":"{\"id\":\"DOC123\",\"type\":\"Purchase Order\",\"content\":{\"customer\":\"John Doe\",\"items\":[{\"product\":\"Laptop\",\"quantity\":1,\"price\":1200},{\"product\":\"Mouse\",\"quantity\":2,\"price\":25}],\"total\":1250}}","payload_encoding":"string"}'
+--data '{
+    "id": "DOC456",
+    "type": "Invoice",
+    "content": {
+        "customer": "Jane Doe",
+        "items": [
+            { "product": "Keyboard", "quantity": 1, "price": 50 },
+            { "product": "Monitor", "quantity": 1, "price": 300 }
+        ],
+        "total": 350
+    }
+}'
 ```
 
 ## Ejecutar el Proyecto
