@@ -32,12 +32,15 @@ curl --location 'http://localhost:15672/api/exchanges/%2F/amq.default/publish' \
 ## Ejecutar el Proyecto
 
 Local:
-Correr el docker de RabbitMQ
-Después de instalar las dependencias, inicia el proyecto con:
+1. Correr el docker de RabbitMQ
+2. Después de instalar las dependencias, inicia el proyecto con:
 ```bash
 npm start
 ```
 
-Dockerizado
-Ejecutar docker-compose up --build
-Consumir el CURL
+Dockerizado:
+1. Ejecutar 
+```bash
+docker-compose up --build
+```
+2. Consumir el CURL
