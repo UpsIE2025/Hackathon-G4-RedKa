@@ -1,0 +1,23 @@
+services:
+  rabbitmq:
+    image: rabbitmq:management
+    container_name: rabbitmq_bridge
+    restart: always
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+
+  messaging_bridge:
+    build:
+      context: .
+    container_name: messaging_bridge
+    restart: always
+    depends_on:
+      - rabbitmq
+    environment:
+      BROKER_URL: amqp://guest:guest@rabbitmq:5672/
+      SOURCE_QUEUE: emisor_user
+      DESTINATION_QUEUE: receptor_user
